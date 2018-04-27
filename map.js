@@ -48,7 +48,7 @@
 		this.mapType 			= _mType || 'dark-v9';
 		this.mapWidth			= _width || 1024;
 		this.mapHeight 			= _height|| 512 ; 
-		this.accessToken 		= 'pk.eyJ1IjoiY2J1cnkiLCJhIjoiY2pnYXRybXc0MXMyNTJ3cWp6aXQ5b25xOCJ9.ZEXmvDyWCLI9qlF-5BmODg';
+		this.accessToken 		= '"<you mapbox key here>"';
 		this.cachedMap 			= undefined;
 		this.templateURI 		= `https://api.mapbox.com/styles/v1/mapbox/${this.mapType}/static/${this.centreLongitude},${this.centralLatitude},${this.zoom}/${this.mapWidth}x${this.mapHeight}/?access_token=${this.accessToken}`;
 	}
