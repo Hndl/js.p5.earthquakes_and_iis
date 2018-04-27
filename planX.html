@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<title>PlanetView</title>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+	<script src="map.js"></script>
+	
+	<script type="text/javascript">
+
+		var w = 1024;
+		var h = 512 /*512*/;
+		var worldMap ;
+		var equakeData ;
+		var satData ; 
+		var eqRing = 2;
+		var bRingMoveOut = true;
+
+		function preload() {
+			//console.log('preload - started');	
+			if (!worldMap){
+										 /* LAT */  /*LON*/
+				worldMap = new MapboxMap( 51.5074, -0.1278 ,w,h,1,'dark-v9' );
+				worldMap.fetch();
+			}
+			equakeData = new EarthquakePins('http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.csv',/,/);
+			//	volcanoData = new VolcanoPins('https://data.humdata.org/dataset/a60ac839-920d-435a-bf7d-25855602699d/resource/e3b1ecf0-ec47-49f7-9011-6bbb7403ef6d/download/volcano.csv',/,/);
+			satData = new SatPins();
+			//console.log('preload - complete');
+			
+		}
+
+		function setup() {
+			//console.log('setup - started');
+			canvas = createCanvas(w , h );
+			setInterval(checkIIS, 60000);
+			setInterval(preload, 600000);
+			//drawVolcanos();
+			frameRate(10);
+			checkIIS();
+			//console.log('setup - completed');
+		}
+
+		function drawEQuakes(){
+			//console.log('drawEQuakes()-started');
+			for ( var i = 1 ; i < equakeData.len() ; i ++ ){
+				var qObj = worldMap.getObj ( equakeData , i);
+				var mag  = equakeData.getMagnitude(i);
+    			var d 	 = equakeData.getPinRadius(mag);
+				noStroke();
+				fill(255,255,0,255);
+				//console.log(`x:${qObj.x}:y:${qObj.y} d:${d}`);
+				ellipse(qObj.x,qObj.y,d,d);
+				//console.log(`${JSON.stringify(qObj)}`);
+				if ( i < 10 ) {
+					//highlight
+					noFill();
+					var alpha = 0;
+					strokeWeight(1)
+					alpha = map ( eqRing,0,80,255,0);
+					eqRing = (eqRing > 80 ? 0 : eqRing+0.1)
+					stroke(255,255,0,alpha);
+					ellipse(qObj.x, qObj.y, eqRing,eqRing);
+					ellipse(qObj.x,qObj.y,eqRing,eqRing);
+				}
+			}
+			//console.log('drawEQuakes()-completed');
+		}
+
+		//TODO need to look at the data to detemrine what to show...
+		function drawVolcanos(){
+			//console.log('drawVolcanos()-started');
+			
+			for ( var i = 1 ; i < volcanoData.len() ; i ++ ){
+
+				var qObj = worldMap.getObj ( volcanoData , i);
+    			//...
+			}
+			
+			//console.log('drawVolcanos()-completed');
+		}
+
+		function checkIIS(){
+			//console.log('checkIIS()-started');
+			var iiss = loadJSON('http://api.open-notify.org/iss-now.json',recordIIS);
+			//console.log('checkIIS-completed');
+		}
+
+		function recordIIS( _data){
+			//console.log(`recordIIS()-started${JSON.stringify(_data)}`);
+			satData.add ( _data );
+			//console.log(`recordIIS()-completed`);
+		}
+
+		function drawISS () {
+
+			for ( var i = (satData.len() - 1) ; i > 0 ; i --){
+				var sObj = worldMap.getObj ( satData , i);
+				push();
+				noStroke();
+				fill(255,0,0,5);
+				ellipse(sObj.x, sObj.y,60,60);
+				fill(255,0,0,255);
+				ellipse(sObj.x, sObj.y,5,5);
+				if ( i === (satData.len()-1)){
+					noFill();
+					stroke(255,0,0,255);
+					ellipse(sObj.x, sObj.y, 65,65);
+				}
+				pop();			
+				//console.log(`drawIIS()-@ x:${sObj.x} y:${sObj.y}`);
+
+			}
+		}
+
+		function mouseClicked () {
+			console.log(`x:${mouseX} y:${mouseY}`);
+		}
+
+		function draw() {
+			//console.log('draw()-started');
+			background(0);
+			translate(w/2,h/2);
+			imageMode(CENTER);
+			image(worldMap.getCachedMap(),0,0);
+			drawISS();
+			drawEQuakes();
+			//console.log('draw()-completed');
+		}
+
+	</script>
+<body>
+
+</body>
+
+</html>
